@@ -24,6 +24,8 @@ var purchaseService = new PurchaseService(purchaseRepo, productRepo);
 var salesService = new SalesService(salesRepo, productRepo);
 var ledgerService = new StockLedgerService(ledgerRepo);
 var opnameService = new StockOpnameService(opnameRepo, productRepo);
+var userRepo = new UserRepository(factory);
+var userService = new UserService(userRepo);
 
 int passed = 0, failed = 0;
 void Check(string label, bool ok)
@@ -145,6 +147,27 @@ var opnameLedger = (await ledgerService.GetByProductAsync(productId))
 Check("ada baris ledger Opname quantity_change = -10", opnameLedger is { QuantityChange: -10 });
 Check($"ledger Opname stock_before 110 → after 100 (aktual {opnameLedger?.StockBefore} → {opnameLedger?.StockAfter})",
     opnameLedger is { StockBefore: 110, StockAfter: 100 });
+
+// --- Skenario 10: autentikasi & seed admin ---
+Console.WriteLine("10. Autentikasi (seed admin, login, role)");
+await userService.EnsureSeedAdminAsync();
+var admin = await userService.LoginAsync("admin", "admin");
+Check($"login admin sukses, role Manajer (aktual {admin.Role})", admin.Role == UserRole.Manajer);
+await ExpectThrows<ValidationException>("login password salah ditolak", () =>
+    userService.LoginAsync("admin", "salah"));
+
+var kasirId = await userService.CreateAsync("kasir1", "rahasia", UserRole.Kasir, "Kasir Satu");
+var kasirUser = await userService.LoginAsync("kasir1", "rahasia");
+Check($"user baru login, role Kasir (aktual {kasirUser.Role})", kasirUser.Role == UserRole.Kasir);
+await ExpectThrows<DuplicateEntityException>("username duplikat ditolak", () =>
+    userService.CreateAsync("kasir1", "lain", UserRole.Stocker, null));
+
+// --- Skenario 11: guard Manajer terakhir ---
+Console.WriteLine("11. Guard Manajer terakhir");
+await ExpectThrows<ValidationException>("hapus Manajer terakhir ditolak", () =>
+    userService.DeleteAsync(admin.UserId));
+await userService.DeleteAsync(kasirId); // hapus kasir biasa boleh
+Check("hapus user non-Manajer berhasil", (await userService.GetAllAsync()).All(u => u.Username != "kasir1"));
 
 Console.WriteLine();
 Console.WriteLine($"HASIL: {passed} PASS, {failed} FAIL");

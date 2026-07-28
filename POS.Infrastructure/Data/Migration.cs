@@ -157,6 +157,16 @@ public class Migration
 			CREATE INDEX IF NOT EXISTS idx_stock_ledger_product ON stock_ledger(product_id);
 			CREATE INDEX IF NOT EXISTS idx_stock_ledger_created ON stock_ledger(created_at);
 			CREATE INDEX IF NOT EXISTS idx_opname_detail_opname ON stock_opname_detail(opname_id);
+
+			CREATE TABLE IF NOT EXISTS users (
+				user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+				username TEXT NOT NULL UNIQUE,
+				password_hash TEXT NOT NULL,
+				role TEXT NOT NULL,
+				full_name TEXT,
+				created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+				updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+			);
 			");
 
 		EnsureColumn(conn, "products", "average_cost", "REAL NOT NULL DEFAULT 0");

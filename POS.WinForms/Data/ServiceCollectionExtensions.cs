@@ -23,6 +23,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISalesRepository, SalesRepository>();
         services.AddSingleton<IStockLedgerRepository, StockLedgerRepository>();
         services.AddSingleton<IStockOpnameRepository, StockOpnameRepository>();
+        services.AddSingleton<IUserRepository, UserRepository>();
+
+        // Sesi user yang login (satu instance selama aplikasi berjalan).
+        services.AddSingleton<UserSession>();
 
         // Application
         services.AddScoped<ICategoryService, CategoryService>();
@@ -33,6 +37,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISalesService, SalesService>();
         services.AddScoped<IStockLedgerService, StockLedgerService>();
         services.AddScoped<IStockOpnameService, StockOpnameService>();
+        services.AddScoped<IUserService, UserService>();
 
         // Forms
         services.AddTransient<Forms.MainForm>();
@@ -45,6 +50,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<Forms.Purchasing.PembayaranHutangForm>();
         services.AddTransient<Forms.Stock.StockOpnameForm>();
         services.AddTransient<Forms.Stock.StockLedgerForm>();
+        services.AddTransient<Forms.Login.LoginForm>();
+        services.AddTransient<Forms.Login.UserForm>();
 
         return services;
     }

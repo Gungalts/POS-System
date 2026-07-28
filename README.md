@@ -9,9 +9,11 @@ dengan *dependency injection* (`Microsoft.Extensions.DependencyInjection`) sebag
 > Backend transaksi **Pembelian**, **Penjualan**, **Stock Opname**, dan **Kartu Stok (Stock Ledger)**
 > sudah berjalan penuh (moving average HPP, pembayaran cicilan/hutang supplier, snapshot COGS,
 > pencatatan tiap pergerakan stok) dan telah diverifikasi lewat `POS.Playground`.
-> UI WinForms sudah tersedia untuk master data (Produk, Kategori, Supplier, Pelanggan),
-> **Kasir**, **Pembelian**, **Pembayaran Hutang**, **Stock Opname**, dan **Kartu Stok**.
-> Modul Login, Dashboard, dan Laporan masih dalam pengerjaan.
+> Aplikasi kini dimulai dengan **Login** dan menerapkan **hak akses berbasis peran**
+> (Manajer, Stocker, Kasir). UI WinForms tersedia untuk master data (Produk, Kategori,
+> Supplier, Pelanggan), **Kasir**, **Pembelian**, **Pembayaran Hutang**, **Stock Opname**,
+> **Kartu Stok**, dan **Manajemen User**.
+> Modul Dashboard dan Laporan masih dalam pengerjaan.
 
 ---
 
@@ -21,8 +23,8 @@ Solusi ini dipecah menjadi beberapa project sesuai lapisan Clean Architecture:
 
 | Project | Peran | Ketergantungan |
 | --- | --- | --- |
-| **POS.Domain** | Entity, interface repository, aturan bisnis inti (moving average, validasi stok, status pembayaran, penyesuaian opname). Tidak bergantung pada layer lain. | — |
-| **POS.Application** | Service / use case: Produk, Kategori, Supplier, Pelanggan, Pembelian, Penjualan, Stock Opname, Stock Ledger. Berisi interface service dan request DTO. | Domain |
+| **POS.Domain** | Entity, interface repository, aturan bisnis inti (moving average, validasi stok, status pembayaran, penyesuaian opname, peran user). Tidak bergantung pada layer lain. | — |
+| **POS.Application** | Service / use case: Produk, Kategori, Supplier, Pelanggan, Pembelian, Penjualan, Stock Opname, Stock Ledger, User. Berisi interface service, request DTO, dan hashing password (PBKDF2). | Domain |
 | **POS.Infrastructure** | Implementasi akses data: SQLite, Dapper, migration, repository. Rencana: Backup, Export, Printing. | Domain |
 | **POS.WinForms** | Antarmuka pengguna (Windows Forms) + komposisi DI. Entry point aplikasi. | Application, Infrastructure |
 | **POS.Playground** | Console harness untuk **verifikasi backend transaksi** (Beli, Jual, Ledger, Opname) secara deterministik. | Application, Infrastructure |
@@ -44,6 +46,15 @@ independen dari database maupun UI.
 ---
 
 ## Fitur yang sudah ada
+
+### Autentikasi & hak akses (`UserService`)
+- **Login** wajib sebelum masuk menu utama; password disimpan sebagai hash **PBKDF2-SHA256**
+  (`PasswordHasher`, format `iterations.salt.hash`, verifikasi *fixed-time*)
+- **Tiga peran**: `Manajer`, `Stocker`, `Kasir` — menu utama menyesuaikan diri:
+  - Master data terlihat semua peran, tetapi **mode lihat saja** untuk non-Manajer (`IReadOnlyForm`)
+  - Kasir/Penjualan: Manajer & Kasir · Pembelian/Hutang/Stok: Manajer & Stocker · Manajemen User: Manajer
+- **Manajemen user** (CRUD, ubah role, ganti password) dengan proteksi *tidak bisa menghapus/menurunkan Manajer terakhir*
+- Seed akun **Manajer default** (`admin` / `admin`) otomatis dibuat bila belum ada user
 
 ### Master data
 - **Entity domain**: `Product`, `Category`, `Supplier`, `Customer`
@@ -75,13 +86,13 @@ independen dari database maupun UI.
 ### Persistensi
 - **Skema database** (`Migration`): `category`, `suppliers`, `customers`, `products`,
   `purchase_header`, `purchase_detail`, `purchase_payments`, `sales_header`, `sales_detail`,
-  `stock_ledger`, `stock_opname_header`, `stock_opname_detail`, beserta index terkait
+  `stock_ledger`, `stock_opname_header`, `stock_opname_detail`, `users`, beserta index terkait
 - **Migrasi kolom aman** untuk DB lama (`EnsureColumn`, mis. penambahan `average_cost`)
 - **Connection factory** SQLite dengan `PRAGMA foreign_keys = ON`
 
 ## Rencana / belum dikerjakan
 
-- Modul UI WinForms: Login, Dashboard, Laporan (folder sudah disiapkan)
+- Modul UI WinForms: Dashboard, Laporan (folder sudah disiapkan)
 - Fitur Infrastructure: Backup, Export, Printing (folder sudah disiapkan)
 - Laporan (penjualan, pembelian, laba/rugi, hutang, mutasi stok)
 
@@ -95,25 +106,28 @@ POS/
 ├─ POS.Domain/
 │  ├─ Entities/                 # Product, Category, Supplier, Customer,
 │  │                            #   Purchase*, Sales*, StockLedgerEntry, StockOpname*,
+│  │                            #   UserAccount, UserRole,
 │  │                            #   PaymentStatus, MovementType/ReferenceType
 │  ├─ Interfaces/               # I{Product,Category,Supplier,Customer,Purchase,Sales,
-│  │                            #   StockLedger,StockOpname}Repository
+│  │                            #   StockLedger,StockOpname,User}Repository
 │  └─ Exceptions/               # Validation, EntityNotFound, DuplicateEntity
 ├─ POS.Application/
 │  ├─ Interfaces/               # I{...}Service untuk tiap use case
 │  ├─ Requests/                 # PurchaseItemRequest, SaleItemRequest, OpnameLineRequest
+│  ├─ Security/                 # PasswordHasher (PBKDF2-SHA256)
 │  └─ Services/                 # implementasi service
 ├─ POS.Infrastructure/
 │  ├─ Data/                     # SqliteConnectionFactory.cs, Migration.cs
 │  ├─ Repositories/             # Product, Category, Supplier, Customer, Purchase,
-│  │                            #   Sales, StockLedger, StockOpname
+│  │                            #   Sales, StockLedger, StockOpname, User
 │  ├─ Backup/  Export/  Printing/
 ├─ POS.WinForms/
-│  ├─ Program.cs                # Entry point + komposisi DI + migration
-│  ├─ Data/                     # ServiceCollectionExtensions (AddPosServices)
+│  ├─ Program.cs                # Entry point + DI + migration + seed admin + login
+│  ├─ Data/                     # ServiceCollectionExtensions, UserSession, IReadOnlyForm
 │  ├─ Forms/
-│  │  ├─ MainForm               # menu utama
-│  │  ├─ Products/              # Product, Category, Supplier, Customer
+│  │  ├─ MainForm               # menu utama (menyesuaikan peran)
+│  │  ├─ Login/                 # LoginForm, UserForm
+│  │  ├─ Products/              # Product, Category, Supplier, Customer (+ .ReadOnly)
 │  │  ├─ Cashier/               # KasirForm
 │  │  ├─ Purchasing/            # PembelianForm, PembayaranHutangForm
 │  │  └─ Stock/                 # StockOpnameForm, StockLedgerForm
@@ -150,9 +164,12 @@ dotnet run --project POS.Playground
 
 ### Menjalankan aplikasi desktop (WinForms)
 
-> Hanya berjalan di Windows. Menyediakan menu utama dengan akses ke master data
-> (Produk, Kategori, Supplier, Pelanggan), Kasir, Pembelian, Pembayaran Hutang,
-> Stock Opname, dan Kartu Stok.
+> Hanya berjalan di Windows. Aplikasi dibuka dengan layar **Login**, lalu menu utama
+> menyesuaikan diri dengan peran user: master data (Produk, Kategori, Supplier, Pelanggan),
+> Kasir, Pembelian, Pembayaran Hutang, Stock Opname, Kartu Stok, dan Manajemen User.
+>
+> Saat pertama kali dijalankan, akun **Manajer default** dibuat otomatis:
+> username `admin`, password `admin` — ganti password ini setelah login.
 
 ```bash
 dotnet run --project POS.WinForms

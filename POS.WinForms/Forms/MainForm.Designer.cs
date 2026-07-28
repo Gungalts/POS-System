@@ -4,6 +4,8 @@ partial class MainForm
 {
     private System.ComponentModel.IContainer components = null;
 
+    private System.Windows.Forms.Label lblUser;
+    private System.Windows.Forms.Button btnLogout;
     private System.Windows.Forms.Label lblMaster;
     private System.Windows.Forms.Button btnCategory;
     private System.Windows.Forms.Button btnSupplier;
@@ -15,6 +17,7 @@ partial class MainForm
     private System.Windows.Forms.Button btnHutang;
     private System.Windows.Forms.Button btnOpname;
     private System.Windows.Forms.Button btnLedger;
+    private System.Windows.Forms.Button btnUsers;
 
     protected override void Dispose(bool disposing)
     {
@@ -27,6 +30,8 @@ partial class MainForm
 
     private void InitializeComponent()
     {
+        this.lblUser = new System.Windows.Forms.Label();
+        this.btnLogout = new System.Windows.Forms.Button();
         this.lblMaster = new System.Windows.Forms.Label();
         this.btnCategory = new System.Windows.Forms.Button();
         this.btnSupplier = new System.Windows.Forms.Button();
@@ -38,18 +43,36 @@ partial class MainForm
         this.btnHutang = new System.Windows.Forms.Button();
         this.btnOpname = new System.Windows.Forms.Button();
         this.btnLedger = new System.Windows.Forms.Button();
+        this.btnUsers = new System.Windows.Forms.Button();
         this.SuspendLayout();
+        //
+        // lblUser
+        //
+        this.lblUser.AutoSize = true;
+        this.lblUser.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Italic);
+        this.lblUser.ForeColor = System.Drawing.Color.DimGray;
+        this.lblUser.Location = new System.Drawing.Point(40, 15);
+        this.lblUser.Text = "Login: -";
+        //
+        // btnLogout
+        //
+        this.btnLogout.Location = new System.Drawing.Point(380, 10);
+        this.btnLogout.Size = new System.Drawing.Size(100, 28);
+        this.btnLogout.TabIndex = 20;
+        this.btnLogout.Text = "Logout";
+        this.btnLogout.UseVisualStyleBackColor = true;
+        this.btnLogout.Click += new System.EventHandler(this.btnLogout_Click);
         //
         // lblMaster
         //
         this.lblMaster.AutoSize = true;
         this.lblMaster.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-        this.lblMaster.Location = new System.Drawing.Point(40, 20);
+        this.lblMaster.Location = new System.Drawing.Point(40, 55);
         this.lblMaster.Text = "Master Data";
         //
         // btnCategory
         //
-        this.btnCategory.Location = new System.Drawing.Point(40, 50);
+        this.btnCategory.Location = new System.Drawing.Point(40, 85);
         this.btnCategory.Size = new System.Drawing.Size(200, 45);
         this.btnCategory.TabIndex = 0;
         this.btnCategory.Text = "Kelola Kategori";
@@ -58,7 +81,7 @@ partial class MainForm
         //
         // btnSupplier
         //
-        this.btnSupplier.Location = new System.Drawing.Point(40, 105);
+        this.btnSupplier.Location = new System.Drawing.Point(40, 140);
         this.btnSupplier.Size = new System.Drawing.Size(200, 45);
         this.btnSupplier.TabIndex = 1;
         this.btnSupplier.Text = "Kelola Supplier";
@@ -67,7 +90,7 @@ partial class MainForm
         //
         // btnCustomer
         //
-        this.btnCustomer.Location = new System.Drawing.Point(40, 160);
+        this.btnCustomer.Location = new System.Drawing.Point(40, 195);
         this.btnCustomer.Size = new System.Drawing.Size(200, 45);
         this.btnCustomer.TabIndex = 2;
         this.btnCustomer.Text = "Kelola Customer";
@@ -76,7 +99,7 @@ partial class MainForm
         //
         // btnProduct
         //
-        this.btnProduct.Location = new System.Drawing.Point(40, 215);
+        this.btnProduct.Location = new System.Drawing.Point(40, 250);
         this.btnProduct.Size = new System.Drawing.Size(200, 45);
         this.btnProduct.TabIndex = 3;
         this.btnProduct.Text = "Kelola Produk";
@@ -87,12 +110,12 @@ partial class MainForm
         //
         this.lblTrans.AutoSize = true;
         this.lblTrans.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-        this.lblTrans.Location = new System.Drawing.Point(280, 20);
+        this.lblTrans.Location = new System.Drawing.Point(280, 55);
         this.lblTrans.Text = "Transaksi & Stok";
         //
         // btnKasir
         //
-        this.btnKasir.Location = new System.Drawing.Point(280, 50);
+        this.btnKasir.Location = new System.Drawing.Point(280, 85);
         this.btnKasir.Size = new System.Drawing.Size(200, 45);
         this.btnKasir.TabIndex = 4;
         this.btnKasir.Text = "Kasir (Penjualan)";
@@ -101,7 +124,7 @@ partial class MainForm
         //
         // btnPembelian
         //
-        this.btnPembelian.Location = new System.Drawing.Point(280, 105);
+        this.btnPembelian.Location = new System.Drawing.Point(280, 140);
         this.btnPembelian.Size = new System.Drawing.Size(200, 45);
         this.btnPembelian.TabIndex = 5;
         this.btnPembelian.Text = "Pembelian";
@@ -110,7 +133,7 @@ partial class MainForm
         //
         // btnHutang
         //
-        this.btnHutang.Location = new System.Drawing.Point(280, 160);
+        this.btnHutang.Location = new System.Drawing.Point(280, 195);
         this.btnHutang.Size = new System.Drawing.Size(200, 45);
         this.btnHutang.TabIndex = 6;
         this.btnHutang.Text = "Pembayaran Hutang";
@@ -119,7 +142,7 @@ partial class MainForm
         //
         // btnOpname
         //
-        this.btnOpname.Location = new System.Drawing.Point(280, 215);
+        this.btnOpname.Location = new System.Drawing.Point(280, 250);
         this.btnOpname.Size = new System.Drawing.Size(200, 45);
         this.btnOpname.TabIndex = 7;
         this.btnOpname.Text = "Stock Opname";
@@ -128,18 +151,29 @@ partial class MainForm
         //
         // btnLedger
         //
-        this.btnLedger.Location = new System.Drawing.Point(280, 270);
+        this.btnLedger.Location = new System.Drawing.Point(280, 305);
         this.btnLedger.Size = new System.Drawing.Size(200, 45);
         this.btnLedger.TabIndex = 8;
         this.btnLedger.Text = "Stock Ledger";
         this.btnLedger.UseVisualStyleBackColor = true;
         this.btnLedger.Click += new System.EventHandler(this.btnLedger_Click);
         //
+        // btnUsers
+        //
+        this.btnUsers.Location = new System.Drawing.Point(40, 305);
+        this.btnUsers.Size = new System.Drawing.Size(200, 45);
+        this.btnUsers.TabIndex = 9;
+        this.btnUsers.Text = "Kelola User";
+        this.btnUsers.UseVisualStyleBackColor = true;
+        this.btnUsers.Click += new System.EventHandler(this.btnUsers_Click);
+        //
         // MainForm
         //
         this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(520, 345);
+        this.ClientSize = new System.Drawing.Size(520, 375);
+        this.Controls.Add(this.lblUser);
+        this.Controls.Add(this.btnLogout);
         this.Controls.Add(this.lblMaster);
         this.Controls.Add(this.btnCategory);
         this.Controls.Add(this.btnSupplier);
@@ -151,6 +185,7 @@ partial class MainForm
         this.Controls.Add(this.btnHutang);
         this.Controls.Add(this.btnOpname);
         this.Controls.Add(this.btnLedger);
+        this.Controls.Add(this.btnUsers);
         this.Name = "MainForm";
         this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
         this.Text = "POS - Menu Utama";
