@@ -5,8 +5,8 @@ arsitektur **Clean Architecture**. Data disimpan secara lokal menggunakan **SQLi
 dengan akses data ringan lewat **Dapper**. Antarmuka pengguna menggunakan **Windows Forms**.
 
 > ⚠️ **Status: Dalam pengembangan awal (early stage).**
-> Fondasi arsitektur, layer domain, dan akses data untuk modul **Produk** sudah berjalan.
-> Antarmuka WinForms dan modul lain (Kasir, Pembelian, Laporan, dsb.) masih berupa kerangka.
+> Fondasi arsitektur, layer domain, dan akses data untuk **Produk, Kategori, Supplier, dan Pelanggan** sudah berjalan.
+> Antarmuka WinForms dan modul transaksi (Kasir, Pembelian, Laporan, dsb.) masih berupa kerangka.
 
 ---
 
@@ -39,12 +39,13 @@ independen dari database maupun UI.
 
 ## Fitur yang sudah ada
 
-- **Entity `Product`** dengan aturan bisnis:
+- **Entity domain**: `Product`, `Category`, `Supplier`, `Customer`
+- **Aturan bisnis pada `Product`**:
   - `IsStockSufficient(qty)` — cek kecukupan stok
   - `ReduceStock(qty)` — pengurangan stok dengan validasi
   - `ConvertPurchaseToSaleUnit(qty)` — konversi satuan beli → satuan jual
-- **Skema database** (`Migration`): tabel `category`, `suppliers`, `products`, beserta index barcode & nama produk
-- **`ProductRepository`** (CRUD lengkap + pencarian berdasarkan barcode/nama)
+- **Skema database** (`Migration`): tabel `category`, `suppliers`, `customers`, `products`, beserta index barcode, nama produk, nama pelanggan, dan nama supplier
+- **Repository** dengan interface di layer Domain: `ProductRepository` (CRUD + pencarian barcode/nama), `CategoryRepository`, `SupplierRepository`, `CustomerRepository`
 - **Connection factory** SQLite dengan `PRAGMA foreign_keys = ON`
 
 ## Rencana / belum dikerjakan
@@ -52,7 +53,7 @@ independen dari database maupun UI.
 - Modul UI WinForms: Login, Dashboard, Kasir, Produk, Pembelian, Laporan (folder sudah disiapkan, masih kosong)
 - Layer `POS.Application` (service / use case)
 - Fitur Infrastructure: Backup, Export, Printing (folder sudah disiapkan)
-- Entity & repository untuk Category, Supplier, transaksi penjualan/pembelian
+- Entity & repository untuk transaksi penjualan/pembelian
 
 ---
 
@@ -62,14 +63,14 @@ independen dari database maupun UI.
 POS/
 ├─ POS.slnx                     # Solution
 ├─ POS.Domain/
-│  ├─ Entities/                 # Product.cs
-│  ├─ Interfaces/               # IProductRepository.cs
+│  ├─ Entities/                 # Product, Category, Supplier, Customer
+│  ├─ Interfaces/               # I{Product,Category,Supplier,Customer}Repository
 │  └─ Exceptions/
 ├─ POS.Application/
 │  └─ Services/
 ├─ POS.Infrastructure/
 │  ├─ Data/                     # SqliteConnectionFactory.cs, Migration.cs
-│  ├─ Repositories/             # ProductRepository.cs
+│  ├─ Repositories/             # Product, Category, Supplier, Customer repository
 │  ├─ Backup/  Export/  Printing/
 ├─ POS.WinForms/
 │  ├─ Program.cs                # Entry point
@@ -94,9 +95,9 @@ dotnet build
 
 ### Mencoba alur data (console)
 
-`POS.Playground` mendemokan migration + operasi repository (menambah produk,
-mencari via barcode, mengurangi stok). Database `pos.db` akan dibuat otomatis di
-folder kerja.
+`POS.Playground` mendemokan migration + operasi repository: menambah produk,
+mencari via barcode, mengurangi stok, serta menambah kategori, supplier, dan
+pelanggan. Database `pos.db` akan dibuat otomatis di folder kerja.
 
 ```bash
 dotnet run --project POS.Playground

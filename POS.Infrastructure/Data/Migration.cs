@@ -27,6 +27,15 @@ public class Migration
 				updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 			);
 
+			CREATE TABLE IF NOT EXISTS customers (
+				customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+				customer_name TEXT NOT NULL,
+				phone_number TEXT,
+				address TEXT,
+				created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+				updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+			);
+
 			CREATE TABLE IF NOT EXISTS products (
 				product_id INTEGER PRIMARY KEY AUTOINCREMENT,
 				barcode TEXT NOT NULL UNIQUE,
@@ -47,6 +56,8 @@ public class Migration
 			
 			CREATE INDEX IF NOT EXISTS idx_products_barcode ON products(barcode);
 			CREATE INDEX IF NOT EXISTS idx_products_name ON products(product_name);
+			CREATE INDEX IF NOT EXISTS idx_customers_name ON customers(customer_name);
+			CREATE INDEX IF NOT EXISTS idx_suppliers_name ON suppliers(supplier_name);
 			");
 	}
 }

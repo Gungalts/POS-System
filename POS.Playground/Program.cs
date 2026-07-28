@@ -26,3 +26,15 @@ Console.WriteLine($"{found!.ProductName} — stok {found.Stock} — Rp{found.Sal
 found.ReduceStock(5);
 await repo.UpdateAsync(found);
 Console.WriteLine($"Setelah jual 5: {(await repo.GetByIdAsync(id))!.Stock}");
+
+var categoryRepo = new CategoryRepository(factory);
+var catId = await categoryRepo.AddAsync(new Category { CategoryName = "Makanan Instan" });
+Console.WriteLine($"Category id: {catId}");
+
+var supplierRepo = new SupplierRepository(factory);
+var supId = await supplierRepo.AddAsync(new Supplier { SupplierName = "PT Indofood", PhoneNumber = "0812xxxx" });
+Console.WriteLine($"Supplier id: {supId}");
+
+var customerRepo = new CustomerRepository(factory);
+var custId = await customerRepo.AddAsync(new Customer { CustomerName = "Budi", PhoneNumber = "0813xxxx", Address = "Jl. Merdeka No. 1" });
+Console.WriteLine($"Customer id: {custId}");
