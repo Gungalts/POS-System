@@ -21,6 +21,7 @@ public class ProductRepository : IProductRepository
         conversion_factor   AS ConversionFactor,
         sale_price          AS SalePrice,
         purchase_price      AS PurchasePrice,
+        average_cost        AS AverageCost,
         stock               AS Stock";
 
     public async Task<Product?> GetByIdAsync(int id)
@@ -62,10 +63,10 @@ public class ProductRepository : IProductRepository
         return await conn.ExecuteScalarAsync<int>(@"
             INSERT INTO products
                 (barcode, product_name, category_id, supplier_id, sale_unit,
-                 purchase_unit, conversion_factor, sale_price, purchase_price, stock)
+                 purchase_unit, conversion_factor, sale_price, purchase_price, average_cost, stock)
             VALUES
                 (@Barcode, @ProductName, @CategoryId, @SupplierId, @SaleUnit,
-                 @PurchaseUnit, @ConversionFactor, @SalePrice, @PurchasePrice, @Stock);
+                 @PurchaseUnit, @ConversionFactor, @SalePrice, @PurchasePrice, @AverageCost, @Stock);
             SELECT last_insert_rowid();", p);
     }
 
@@ -83,6 +84,7 @@ public class ProductRepository : IProductRepository
                 conversion_factor = @ConversionFactor,
                 sale_price        = @SalePrice,
                 purchase_price    = @PurchasePrice,
+                average_cost      = @AverageCost,
                 stock             = @Stock,
                 updated_at        = CURRENT_TIMESTAMP
             WHERE product_id = @ProductId;", p);

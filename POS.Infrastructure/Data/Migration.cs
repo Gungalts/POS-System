@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 
 namespace POS.Infrastructure.Data;
 
@@ -58,6 +59,79 @@ public class Migration
 			CREATE INDEX IF NOT EXISTS idx_products_name ON products(product_name);
 			CREATE INDEX IF NOT EXISTS idx_customers_name ON customers(customer_name);
 			CREATE INDEX IF NOT EXISTS idx_suppliers_name ON suppliers(supplier_name);
+
+			CREATE TABLE IF NOT EXISTS purchase_header (
+				purchase_id INTEGER PRIMARY KEY AUTOINCREMENT,
+				supplier_id INTEGER NOT NULL,
+				purchase_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+				grand_total INTEGER NOT NULL,
+				payment_status TEXT NOT NULL DEFAULT 'Belum Lunas',
+				amount_paid INTEGER NOT NULL DEFAULT 0,
+				notes TEXT,
+				created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+				updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+				FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id)
+			);
+
+			CREATE TABLE IF NOT EXISTS purchase_detail (
+				purchase_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
+				purchase_id INTEGER NOT NULL,
+				product_id INTEGER NOT NULL,
+				quantity INTEGER NOT NULL,
+				purchase_price INTEGER NOT NULL,
+				subtotal INTEGER NOT NULL,
+				FOREIGN KEY (purchase_id) REFERENCES purchase_header(purchase_id),
+				FOREIGN KEY (product_id) REFERENCES products(product_id)
+			);
+
+			CREATE TABLE IF NOT EXISTS purchase_payments (
+				payment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+				purchase_id INTEGER NOT NULL,
+				amount INTEGER NOT NULL,
+				payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+				notes TEXT,
+				created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+				FOREIGN KEY (purchase_id) REFERENCES purchase_header(purchase_id)
+			);
+
+			CREATE TABLE IF NOT EXISTS sales_header (
+				sale_id INTEGER PRIMARY KEY AUTOINCREMENT,
+				customer_id INTEGER,
+				sale_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+				grand_total INTEGER NOT NULL,
+				payment_method TEXT,
+				amount_paid INTEGER NOT NULL,
+				created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+				FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+			);
+
+			CREATE TABLE IF NOT EXISTS sales_detail (
+				sale_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
+				sale_id INTEGER NOT NULL,
+				product_id INTEGER NOT NULL,
+				quantity INTEGER NOT NULL,
+				sale_price INTEGER NOT NULL,
+				cost_of_goods_sold REAL NOT NULL,
+				subtotal INTEGER NOT NULL,
+				FOREIGN KEY (sale_id) REFERENCES sales_header(sale_id),
+				FOREIGN KEY (product_id) REFERENCES products(product_id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_purchase_supplier ON purchase_header(supplier_id);
+			CREATE INDEX IF NOT EXISTS idx_purchase_payments_purchase ON purchase_payments(purchase_id);
+			CREATE INDEX IF NOT EXISTS idx_sales_customer ON sales_header(customer_id);
+			CREATE INDEX IF NOT EXISTS idx_sales_date ON sales_header(sale_date);
 			");
+
+		EnsureColumn(conn, "products", "average_cost", "REAL NOT NULL DEFAULT 0");
+	}
+
+	// Menambah kolom bila belum ada — untuk DB lama yang tabelnya sudah terlanjur dibuat
+	// (CREATE TABLE IF NOT EXISTS tidak akan menambah kolom baru pada tabel eksisting).
+	private static void EnsureColumn(IDbConnection conn, string table, string column, string definition)
+	{
+		var existing = conn.Query<string>($"SELECT name FROM pragma_table_info('{table}');");
+		if (!existing.Any(c => string.Equals(c, column, StringComparison.OrdinalIgnoreCase)))
+			conn.Execute($"ALTER TABLE {table} ADD COLUMN {column} {definition};");
 	}
 }

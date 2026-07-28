@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\POS.Infrastructure\POS.Infrastructure.csproj" />
+    <ProjectReference Include="..\POS.Application\POS.Application.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
