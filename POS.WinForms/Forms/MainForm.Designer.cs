@@ -18,6 +18,7 @@ partial class MainForm
     private System.Windows.Forms.Button btnOpname;
     private System.Windows.Forms.Button btnLedger;
     private System.Windows.Forms.Button btnUsers;
+    private System.Windows.Forms.Button btnLaporan;
 
     protected override void Dispose(bool disposing)
     {
@@ -44,6 +45,7 @@ partial class MainForm
         this.btnOpname = new System.Windows.Forms.Button();
         this.btnLedger = new System.Windows.Forms.Button();
         this.btnUsers = new System.Windows.Forms.Button();
+        this.btnLaporan = new System.Windows.Forms.Button();
         this.SuspendLayout();
         //
         // lblUser
@@ -167,11 +169,21 @@ partial class MainForm
         this.btnUsers.UseVisualStyleBackColor = true;
         this.btnUsers.Click += new System.EventHandler(this.btnUsers_Click);
         //
+        // btnLaporan
+        //
+        this.btnLaporan.Location = new System.Drawing.Point(40, 365);
+        this.btnLaporan.Size = new System.Drawing.Size(440, 45);
+        this.btnLaporan.TabIndex = 10;
+        this.btnLaporan.Text = "Laporan";
+        this.btnLaporan.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
+        this.btnLaporan.UseVisualStyleBackColor = true;
+        this.btnLaporan.Click += new System.EventHandler(this.btnLaporan_Click);
+        //
         // MainForm
         //
         this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(520, 375);
+        this.ClientSize = new System.Drawing.Size(520, 435);
         this.Controls.Add(this.lblUser);
         this.Controls.Add(this.btnLogout);
         this.Controls.Add(this.lblMaster);
@@ -186,6 +198,7 @@ partial class MainForm
         this.Controls.Add(this.btnOpname);
         this.Controls.Add(this.btnLedger);
         this.Controls.Add(this.btnUsers);
+        this.Controls.Add(this.btnLaporan);
         this.Name = "MainForm";
         this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
         this.Text = "POS - Menu Utama";

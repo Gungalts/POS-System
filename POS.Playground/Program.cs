@@ -26,6 +26,8 @@ var ledgerService = new StockLedgerService(ledgerRepo);
 var opnameService = new StockOpnameService(opnameRepo, productRepo);
 var userRepo = new UserRepository(factory);
 var userService = new UserService(userRepo);
+var reportRepo = new ReportRepository(factory);
+var reportService = new ReportService(reportRepo);
 
 int passed = 0, failed = 0;
 void Check(string label, bool ok)
@@ -168,6 +170,33 @@ await ExpectThrows<ValidationException>("hapus Manajer terakhir ditolak", () =>
     userService.DeleteAsync(admin.UserId));
 await userService.DeleteAsync(kasirId); // hapus kasir biasa boleh
 Check("hapus user non-Manajer berhasil", (await userService.GetAllAsync()).All(u => u.Username != "kasir1"));
+
+// --- Skenario 12: laporan (agregasi) ---
+Console.WriteLine("12. Laporan (penjualan/laba, pembelian, hutang, persediaan)");
+var repFrom = DateTime.Today.AddDays(-1);
+var repTo = DateTime.Today.AddDays(1);
+
+var salesSummary = await reportService.GetSalesSummaryAsync(repFrom, repTo);
+Check($"laporan: transaksi=1 (aktual {salesSummary.TransactionCount})", salesSummary.TransactionCount == 1);
+Check($"laporan: omzet=35000 (aktual {salesSummary.Revenue})", salesSummary.Revenue == 35000m);
+Check($"laporan: HPP=12500 (aktual {salesSummary.Cogs})", salesSummary.Cogs == 12500m);
+Check($"laporan: laba kotor=22500 (aktual {salesSummary.GrossProfit})", salesSummary.GrossProfit == 22500m);
+
+var byProduct = (await reportService.GetSalesByProductAsync(repFrom, repTo)).ToList();
+Check($"laporan per produk: 1 baris, omzet 35000 (aktual {byProduct.FirstOrDefault()?.Revenue})",
+    byProduct.Count == 1 && byProduct[0].Revenue == 35000m && byProduct[0].GrossProfit == 22500m);
+
+var bySupplier = (await reportService.GetPurchaseBySupplierAsync(repFrom, repTo)).ToList();
+Check($"laporan pembelian: 3 nota, total 150000 (aktual {bySupplier.FirstOrDefault()?.PurchaseCount}/{bySupplier.FirstOrDefault()?.TotalPurchase})",
+    bySupplier.Count == 1 && bySupplier[0].PurchaseCount == 3 && bySupplier[0].TotalPurchase == 150000m
+    && bySupplier[0].Outstanding == 0m);
+
+var debt = (await reportService.GetSupplierDebtAsync()).ToList();
+Check($"laporan hutang: kosong karena semua lunas (aktual {debt.Count} baris)", debt.Count == 0);
+
+var inventory = (await reportService.GetInventoryValueAsync()).ToList();
+Check($"laporan persediaan: nilai 125000 (aktual {inventory.Sum(i => i.Value)})",
+    inventory.Sum(i => i.Value) == 125000m);
 
 Console.WriteLine();
 Console.WriteLine($"HASIL: {passed} PASS, {failed} FAIL");

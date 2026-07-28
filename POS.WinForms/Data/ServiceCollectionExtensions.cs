@@ -24,6 +24,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IStockLedgerRepository, StockLedgerRepository>();
         services.AddSingleton<IStockOpnameRepository, StockOpnameRepository>();
         services.AddSingleton<IUserRepository, UserRepository>();
+        services.AddSingleton<IReportRepository, ReportRepository>();
 
         // Sesi user yang login (satu instance selama aplikasi berjalan).
         services.AddSingleton<UserSession>();
@@ -38,6 +39,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStockLedgerService, StockLedgerService>();
         services.AddScoped<IStockOpnameService, StockOpnameService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IReportService, ReportService>();
 
         // Forms
         services.AddTransient<Forms.MainForm>();
@@ -52,6 +54,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<Forms.Stock.StockLedgerForm>();
         services.AddTransient<Forms.Login.LoginForm>();
         services.AddTransient<Forms.Login.UserForm>();
+        services.AddTransient<Forms.Reports.LaporanForm>();
 
         return services;
     }

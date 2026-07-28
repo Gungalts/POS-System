@@ -4,6 +4,7 @@ using POS.WinForms.Forms.Cashier;
 using POS.WinForms.Forms.Login;
 using POS.WinForms.Forms.Products;
 using POS.WinForms.Forms.Purchasing;
+using POS.WinForms.Forms.Reports;
 using POS.WinForms.Forms.Stock;
 
 namespace POS.WinForms.Forms;
@@ -66,6 +67,7 @@ public partial class MainForm : Form
     private void btnOpname_Click(object sender, EventArgs e) => ShowDialog<StockOpnameForm>();
     private void btnLedger_Click(object sender, EventArgs e) => ShowDialog<StockLedgerForm>();
     private void btnUsers_Click(object sender, EventArgs e) => ShowDialog<UserForm>();
+    private void btnLaporan_Click(object sender, EventArgs e) => ShowDialog<LaporanForm>();
 
     private void btnLogout_Click(object sender, EventArgs e)
     {
