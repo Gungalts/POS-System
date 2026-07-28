@@ -18,7 +18,8 @@ public class SalesRepository : ISalesRepository
         payment_method AS PaymentMethod,
         amount_paid    AS AmountPaid";
 
-    public async Task<int> CreateAsync(SalesHeader header, IReadOnlyList<Product> updatedProducts)
+    public async Task<int> CreateAsync(SalesHeader header, IReadOnlyList<Product> updatedProducts,
+        IReadOnlyList<StockLedgerEntry> ledgerEntries)
     {
         using var conn = _factory.CreateConnection();
         using var tx = conn.BeginTransaction();
@@ -48,6 +49,12 @@ public class SalesRepository : ISalesRepository
                         stock      = @Stock,
                         updated_at = CURRENT_TIMESTAMP
                     WHERE product_id = @ProductId;", p, tx);
+
+            foreach (var entry in ledgerEntries)
+            {
+                entry.ReferenceId = saleId;
+                await conn.ExecuteAsync(StockLedgerRepository.InsertSql, entry, tx);
+            }
 
             tx.Commit();
             return saleId;

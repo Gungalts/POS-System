@@ -121,6 +121,42 @@ public class Migration
 			CREATE INDEX IF NOT EXISTS idx_purchase_payments_purchase ON purchase_payments(purchase_id);
 			CREATE INDEX IF NOT EXISTS idx_sales_customer ON sales_header(customer_id);
 			CREATE INDEX IF NOT EXISTS idx_sales_date ON sales_header(sale_date);
+
+			CREATE TABLE IF NOT EXISTS stock_ledger (
+				ledger_id INTEGER PRIMARY KEY AUTOINCREMENT,
+				product_id INTEGER NOT NULL,
+				movement_type TEXT NOT NULL,
+				quantity_change INTEGER NOT NULL,
+				stock_before INTEGER NOT NULL,
+				stock_after INTEGER NOT NULL,
+				reference_type TEXT,
+				reference_id INTEGER,
+				notes TEXT,
+				created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+				FOREIGN KEY (product_id) REFERENCES products(product_id)
+			);
+
+			CREATE TABLE IF NOT EXISTS stock_opname_header (
+				opname_id INTEGER PRIMARY KEY AUTOINCREMENT,
+				opname_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+				notes TEXT,
+				created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+			);
+
+			CREATE TABLE IF NOT EXISTS stock_opname_detail (
+				opname_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
+				opname_id INTEGER NOT NULL,
+				product_id INTEGER NOT NULL,
+				system_stock INTEGER NOT NULL,
+				physical_stock INTEGER NOT NULL,
+				difference INTEGER NOT NULL,
+				FOREIGN KEY (opname_id) REFERENCES stock_opname_header(opname_id),
+				FOREIGN KEY (product_id) REFERENCES products(product_id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_stock_ledger_product ON stock_ledger(product_id);
+			CREATE INDEX IF NOT EXISTS idx_stock_ledger_created ON stock_ledger(created_at);
+			CREATE INDEX IF NOT EXISTS idx_opname_detail_opname ON stock_opname_detail(opname_id);
 			");
 
 		EnsureColumn(conn, "products", "average_cost", "REAL NOT NULL DEFAULT 0");

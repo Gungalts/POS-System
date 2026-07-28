@@ -5,3 +5,6 @@ public record PurchaseItemRequest(int ProductId, int Quantity, decimal PurchaseP
 
 // Baris item saat membuat transaksi penjualan (qty dalam satuan jual).
 public record SaleItemRequest(int ProductId, int Quantity);
+
+// Baris hasil hitung fisik saat stock opname.
+public record OpnameLineRequest(int ProductId, int PhysicalStock);

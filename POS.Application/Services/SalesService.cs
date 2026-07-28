@@ -31,6 +31,7 @@ public class SalesService : ISalesService
             AmountPaid = amountPaid
         };
         var updatedProducts = new List<Product>();
+        var ledgerEntries = new List<StockLedgerEntry>();
 
         foreach (var item in itemList)
         {
@@ -39,8 +40,20 @@ public class SalesService : ISalesService
                     $"Produk dengan id {item.ProductId} tidak ditemukan");
 
             // ReduceStock melempar bila stok tidak cukup.
+            int stockBefore = product.Stock;
             product.ReduceStock(item.Quantity);
             updatedProducts.Add(product);
+
+            ledgerEntries.Add(new StockLedgerEntry
+            {
+                ProductId = product.ProductId,
+                MovementType = MovementType.Penjualan,
+                QuantityChange = product.Stock - stockBefore, // negatif
+                StockBefore = stockBefore,
+                StockAfter = product.Stock,
+                ReferenceType = ReferenceType.Sale,
+                Notes = "Penjualan"
+            });
 
             int salePrice = (int)product.SalePrice;
             header.Details.Add(new SalesDetail
@@ -58,7 +71,7 @@ public class SalesService : ISalesService
         // Aturan bisnis inti: jual harus lunas.
         header.EnsurePaidInFull();
 
-        return await _repo.CreateAsync(header, updatedProducts);
+        return await _repo.CreateAsync(header, updatedProducts, ledgerEntries);
     }
 
     public Task<SalesHeader?> GetByIdAsync(int id) => _repo.GetByIdAsync(id);

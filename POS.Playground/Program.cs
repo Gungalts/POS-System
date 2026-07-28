@@ -17,9 +17,13 @@ var productRepo = new ProductRepository(factory);
 var supplierRepo = new SupplierRepository(factory);
 var purchaseRepo = new PurchaseRepository(factory);
 var salesRepo = new SalesRepository(factory);
+var ledgerRepo = new StockLedgerRepository(factory);
+var opnameRepo = new StockOpnameRepository(factory);
 
 var purchaseService = new PurchaseService(purchaseRepo, productRepo);
 var salesService = new SalesService(salesRepo, productRepo);
+var ledgerService = new StockLedgerService(ledgerRepo);
+var opnameService = new StockOpnameService(opnameRepo, productRepo);
 
 int passed = 0, failed = 0;
 void Check(string label, bool ok)
@@ -112,6 +116,35 @@ Console.WriteLine("7. Jual melebihi stok → InvalidOperationException");
 await ExpectThrows<InvalidOperationException>("tolak stok kurang", () =>
     salesService.CreateSaleAsync(null,
         new[] { new SaleItemRequest(productId, 99999) }, "Tunai", amountPaid: 999999999));
+
+// --- Skenario 8: stock ledger merekam tiap pergerakan ---
+Console.WriteLine("8. Stock Ledger merekam pergerakan beli & jual");
+var ledger = (await ledgerService.GetByProductAsync(productId)).ToList();
+// 3x beli (+40 masing-masing) + 1x jual (-10) = 4 baris
+Check($"jumlah baris ledger = 4 (aktual {ledger.Count})", ledger.Count == 4);
+var beliEntries = ledger.Where(l => l.MovementType == MovementType.Pembelian).ToList();
+Check($"ada 3 baris Pembelian +40 (aktual {beliEntries.Count})",
+    beliEntries.Count == 3 && beliEntries.All(l => l.QuantityChange == 40));
+var jualEntry = ledger.FirstOrDefault(l => l.MovementType == MovementType.Penjualan);
+Check("baris Penjualan quantity_change = -10", jualEntry is { QuantityChange: -10 });
+Check($"baris Penjualan stock_before 120 → after 110 (aktual {jualEntry?.StockBefore} → {jualEntry?.StockAfter})",
+    jualEntry is { StockBefore: 120, StockAfter: 110 });
+
+// --- Skenario 9: stock opname menyesuaikan stok + catat ledger ---
+Console.WriteLine("9. Stock Opname (fisik 100 < sistem 110)");
+p = (await productRepo.GetByIdAsync(productId))!;  // stok 110
+var opnameId = await opnameService.CreateOpnameAsync("opname bulanan",
+    new[] { new OpnameLineRequest(productId, 100) });
+p = (await productRepo.GetByIdAsync(productId))!;
+Check($"stok tersesuaikan ke 100 (aktual {p.Stock})", p.Stock == 100);
+var opname = (await opnameService.GetByIdAsync(opnameId))!;
+Check($"detail opname tersimpan: selisih -10 (aktual {opname.Details.FirstOrDefault()?.Difference})",
+    opname.Details.Count == 1 && opname.Details[0].Difference == -10);
+var opnameLedger = (await ledgerService.GetByProductAsync(productId))
+    .FirstOrDefault(l => l.MovementType == MovementType.Opname);
+Check("ada baris ledger Opname quantity_change = -10", opnameLedger is { QuantityChange: -10 });
+Check($"ledger Opname stock_before 110 → after 100 (aktual {opnameLedger?.StockBefore} → {opnameLedger?.StockAfter})",
+    opnameLedger is { StockBefore: 110, StockAfter: 100 });
 
 Console.WriteLine();
 Console.WriteLine($"HASIL: {passed} PASS, {failed} FAIL");

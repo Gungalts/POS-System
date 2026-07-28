@@ -30,6 +30,7 @@ public class PurchaseService : IPurchaseService
             Notes = notes?.Trim()
         };
         var updatedProducts = new List<Product>();
+        var ledgerEntries = new List<StockLedgerEntry>();
 
         foreach (var item in itemList)
         {
@@ -38,8 +39,20 @@ public class PurchaseService : IPurchaseService
                     $"Produk dengan id {item.ProductId} tidak ditemukan");
 
             // Moving average + penambahan stok dihitung di entity.
+            int stockBefore = product.Stock;
             product.ReceiveStock(item.Quantity, item.PurchasePrice);
             updatedProducts.Add(product);
+
+            ledgerEntries.Add(new StockLedgerEntry
+            {
+                ProductId = product.ProductId,
+                MovementType = MovementType.Pembelian,
+                QuantityChange = product.Stock - stockBefore,
+                StockBefore = stockBefore,
+                StockAfter = product.Stock,
+                ReferenceType = ReferenceType.Purchase,
+                Notes = "Pembelian"
+            });
 
             int purchasePrice = (int)item.PurchasePrice;
             header.Details.Add(new PurchaseDetail
@@ -61,7 +74,7 @@ public class PurchaseService : IPurchaseService
         header.AmountPaid = initialPayment;
         header.RecalculatePaymentStatus();
 
-        return await _repo.CreateAsync(header, updatedProducts);
+        return await _repo.CreateAsync(header, updatedProducts, ledgerEntries);
     }
 
     public async Task AddPaymentAsync(int purchaseId, int amount, string? notes)
@@ -88,6 +101,9 @@ public class PurchaseService : IPurchaseService
         var unpaid = await _repo.GetUnpaidBySupplierAsync(supplierId);
         return unpaid.Sum(h => h.Remaining);
     }
+
+    public Task<IEnumerable<PurchaseHeader>> GetUnpaidBySupplierAsync(int supplierId)
+        => _repo.GetUnpaidBySupplierAsync(supplierId);
 
     public Task<PurchaseHeader?> GetByIdAsync(int id) => _repo.GetByIdAsync(id);
 

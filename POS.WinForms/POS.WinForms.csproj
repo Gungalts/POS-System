@@ -22,6 +22,7 @@
     <Folder Include="Forms\Reports\" />
     <Folder Include="Forms\Purchasing\" />
     <Folder Include="Forms\Products\" />
+    <Folder Include="Forms\Stock\" />
   </ItemGroup>
 
   <ItemGroup>

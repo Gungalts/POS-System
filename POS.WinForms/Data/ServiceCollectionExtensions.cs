@@ -21,19 +21,30 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICustomerRepository, CustomerRepository>();
         services.AddSingleton<IPurchaseRepository, PurchaseRepository>();
         services.AddSingleton<ISalesRepository, SalesRepository>();
+        services.AddSingleton<IStockLedgerRepository, StockLedgerRepository>();
+        services.AddSingleton<IStockOpnameRepository, StockOpnameRepository>();
 
         // Application
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ISupplierService, SupplierService>();
         services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IPurchaseService, PurchaseService>();
         services.AddScoped<ISalesService, SalesService>();
+        services.AddScoped<IStockLedgerService, StockLedgerService>();
+        services.AddScoped<IStockOpnameService, StockOpnameService>();
 
         // Forms
         services.AddTransient<Forms.MainForm>();
         services.AddTransient<Forms.Products.CategoryForm>();
         services.AddTransient<Forms.Products.SupplierForm>();
         services.AddTransient<Forms.Products.CustomerForm>();
+        services.AddTransient<Forms.Products.ProductForm>();
+        services.AddTransient<Forms.Cashier.KasirForm>();
+        services.AddTransient<Forms.Purchasing.PembelianForm>();
+        services.AddTransient<Forms.Purchasing.PembayaranHutangForm>();
+        services.AddTransient<Forms.Stock.StockOpnameForm>();
+        services.AddTransient<Forms.Stock.StockLedgerForm>();
 
         return services;
     }

@@ -48,4 +48,12 @@ public class Product
         Stock += addedSaleQty;
         PurchasePrice = purchasePrice; // referensi harga beli terakhir saja
     }
+
+    // Menyesuaikan stok ke hasil hitung fisik (stock opname).
+    public void SetStockFromOpname(int physicalStock)
+    {
+        if (physicalStock < 0)
+            throw new ArgumentException("Stok Fisik Tidak Boleh Negatif");
+        Stock = physicalStock;
+    }
 }

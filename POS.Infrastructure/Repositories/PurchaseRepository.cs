@@ -19,7 +19,8 @@ public class PurchaseRepository : IPurchaseRepository
         amount_paid     AS AmountPaid,
         notes           AS Notes";
 
-    public async Task<int> CreateAsync(PurchaseHeader header, IReadOnlyList<Product> updatedProducts)
+    public async Task<int> CreateAsync(PurchaseHeader header, IReadOnlyList<Product> updatedProducts,
+        IReadOnlyList<StockLedgerEntry> ledgerEntries)
     {
         using var conn = _factory.CreateConnection();
         using var tx = conn.BeginTransaction();
@@ -58,6 +59,12 @@ public class PurchaseRepository : IPurchaseRepository
                         purchase_price = @PurchasePrice,
                         updated_at     = CURRENT_TIMESTAMP
                     WHERE product_id = @ProductId;", p, tx);
+
+            foreach (var entry in ledgerEntries)
+            {
+                entry.ReferenceId = purchaseId;
+                await conn.ExecuteAsync(StockLedgerRepository.InsertSql, entry, tx);
+            }
 
             tx.Commit();
             return purchaseId;
