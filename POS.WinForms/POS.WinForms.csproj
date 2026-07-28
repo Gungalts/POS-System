@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\POS.Application\POS.Application.csproj" />
+    <ProjectReference Include="..\POS.Infrastructure\POS.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\" />
+    <Folder Include="Data\" />
+    <Folder Include="Forms\Login\" />
+    <Folder Include="Forms\Dashboard\" />
+    <Folder Include="Forms\Cashier\" />
+    <Folder Include="Forms\Reports\" />
+    <Folder Include="Forms\Purchasing\" />
+    <Folder Include="Forms\Products\" />
+  </ItemGroup>
+
+</Project>
